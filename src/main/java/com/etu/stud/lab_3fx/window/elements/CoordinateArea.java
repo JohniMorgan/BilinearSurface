@@ -5,11 +5,15 @@ import com.etu.stud.lab_3fx.transformations.RectangularTransformer;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -23,6 +27,10 @@ CoordinateArea - класс, наследующий сцену в JavaFX, а п�
 этого класса видит пользователь программы.
  --------------------------------------------------------------*/
 public class CoordinateArea extends Scene {
+    static final String[] path = {
+            "C:\\Users\\Evgeny\\Documents\\IDEA\\Lab_3FX\\src\\main\\resources\\com\\etu\\stud\\lab_3fx\\Тетра_цвет.png",
+            "C:\\Users\\Evgeny\\Documents\\IDEA\\Lab_3FX\\src\\main\\resources\\com\\etu\\stud\\lab_3fx\\Тетра.png"
+    };
     static final Integer WIDTH = 500; //Ширина области координат
     static final Integer HEIGHT = 500; //Высота области координат
     static final BorderPane root = new BorderPane(); //Корневая понель программы
@@ -35,7 +43,11 @@ public class CoordinateArea extends Scene {
     Double xAngle = 0.0; //Угол поворота вдоль X
     CircleSlider yRotate; //Слайдер поворота вдоль Y
     Double yAngle = 0.0; //Угол поворота вдоль Y
+    CircleSlider zRotate;
+    Double zAngle = 0.0;
     Double scale = 1.0; // Масштаб картинки
+    static Integer flag = 1;
+    Image[] i;
     public CoordinateArea() {
         super(root, WIDTH + 200, HEIGHT + 200, Color.AZURE); //Иницализация сцены
         area.setMaxSize(WIDTH, HEIGHT); //Инициализация области координат
@@ -106,10 +118,43 @@ public class CoordinateArea extends Scene {
                 //Перерисовываем с новым углом
             }
         });
-        //Ставим слайдеры по обе стороны от таблицы
-        //Ближе к соответствующим осям
-        topToolBox.setLeft(p2);
-        topToolBox.setRight(p);
+        zRotate = new CircleSlider(50.0, 50.0, Color.GREEN, "Угол поворота\nОсь Z");
+        Pane p3 = new Pane(zRotate.getArea());
+        p3.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                zAngle = zRotate.getAngle();
+                printControlPoints();
+            }
+        });
+
+        p.relocate(10, 40);
+        p2.relocate(10, 160);
+        p3.relocate(10, 280);
+        topToolBox.getChildren().addAll(p, p2, p3);
+
+        Button switcher = new Button();
+        i = new Image[]{
+                new Image(path[0]),
+                new Image(path[1])
+        };
+        ImageView iv = new ImageView(i[flag]);
+        iv.setFitHeight(50);
+        iv.setFitWidth(50);
+        switcher.setGraphic(iv);
+        switcher.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                System.out.println("switch");
+                flag = (flag+1) % 2;
+                iv.setImage(i[flag]);
+                switcher.setGraphic(iv);
+                printControlPoints();
+            }
+        });
+        Pane ps = new Pane(switcher);
+        ps.relocate(600, 50);
+        topToolBox.getChildren().add(ps);
 
         //Закрепляем таблицу и слайдеры на оконном интерфейсе.
         root.setTop(topToolBox);
@@ -153,7 +198,7 @@ public class CoordinateArea extends Scene {
     name: Подпись оси
      */
     protected void createGuideArrow(Point3D endPoint, Double argRotate, Color color, String name) {
-        Point2D newEndPoint = RectangularTransformer.transform(endPoint); //Проецируем на новую систему
+        Point3D newEndPoint = RectangularTransformer.transform(endPoint); //Проецируем на новую систему
         Line guide = new Line(center.getX(), center.getY(), //Создаём линию в новой системе
                 newEndPoint.getX() + center.getX(), -newEndPoint.getY() + center.getY());
         guide.setStroke(color); //Задаём её цвет
@@ -188,7 +233,7 @@ public class CoordinateArea extends Scene {
                 control[i] = points[i].castToPoint();
             }
             //Если у нас получилось, формируем новую поверхность с полученными параметрами
-            actualSurface = new SurfaceArea(control, center, scale, xAngle, yAngle);
+            actualSurface = new SurfaceArea(control, center, scale, xAngle, yAngle, zAngle);
             //И выводим её на координатную плоскость
             area.getChildren().add(actualSurface);
         } catch (Exception e) {

@@ -33,6 +33,21 @@ public class AccessPoint3D {
         this.z = z;
     }
 
+    //
+
+
+    public String getX() {
+        return x;
+    }
+
+    public String getY() {
+        return y;
+    }
+
+    public String getZ() {
+        return z;
+    }
+
     @Override
     public String toString() {
         return "AccessPoint3D {x:" + x + ";y:"+y+";z:"+z+"}";

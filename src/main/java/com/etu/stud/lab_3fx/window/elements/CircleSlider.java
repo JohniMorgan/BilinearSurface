@@ -62,7 +62,6 @@ public class CircleSlider {
         angle = Math.toDegrees(angle);
         angle = (angle + 360) % 360;
         setLinePosition(angle); //Установить бегунок в это место
-        title.setText(name + " " + angle.intValue()); //Вывести текущий угол в надпись
     }
 
     private void setLinePosition(double angle) {

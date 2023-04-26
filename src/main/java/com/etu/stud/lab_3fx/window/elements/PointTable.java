@@ -41,34 +41,25 @@ public class PointTable {
     public PointTable(CoordinateArea parent) {
         //Инициализовать и подготовить окно об ошибке
         errMsg = new ModalErrorNumber(this);
-        table.setEditable(true); //Разрешить редактировать таблицу
-        table.setDisable(false); //Убрать ограничение
-        xColumn.setPrefWidth(130); //Определить размеры столбца
-        xColumn.setSortable(false); //Отключить сортировку таблицы
-        /* !!!---------------------------------------!!!
-            Отключение сортировки необходимо, т.к.
-            порядок точек в таблице строго определён
-           !!!---------------------------------------!!!*/
-        //Инициализация столбца координаты X...
-        xColumn.setCellValueFactory(new PropertyValueFactory<AccessPoint3D, String>("x"));
-        //Сделать ячейки изменяемыми....
+        table.setEditable(true);
+        table.setDisable(false);
+        xColumn.setPrefWidth(130);
+        xColumn.setSortable(false);
+        xColumn.setCellValueFactory(new PropertyValueFactory<>("x"));
         xColumn.setCellFactory(TextFieldTableCell.<AccessPoint3D>forTableColumn());
-        //Подписка на событие подтверждения изменения
         xColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<AccessPoint3D, String>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<AccessPoint3D, String> event) {
-                try { //Попытаться подставить значение в данные
+                try {
                     Double.valueOf(event.getNewValue());
                     ((AccessPoint3D) event.getTableView().getItems().get(
                             event.getTablePosition().getRow()
                     )).setX(event.getNewValue());
+                    table.refresh();
                 } catch (NumberFormatException e) {
-                    //Неудача - пользователь ввёл НЕ число
                     //Добавление модального окна с предупреждением о типе данных
                     errMsg.activate();
                 }
-                //Попытаемся нарисовать плоскость
-                //Т.н. реактивность данных
                 try {
                     parent.printControlPoints();
                 } catch (Exception e) {
@@ -76,10 +67,9 @@ public class PointTable {
                 }
             }
         });
-        //Аналогичная инициализация столбца Y
         yColumn.setPrefWidth(130);
         yColumn.setSortable(false);
-        yColumn.setCellValueFactory(new PropertyValueFactory<AccessPoint3D, String>("y"));
+        yColumn.setCellValueFactory(new PropertyValueFactory<>("y"));
         yColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         yColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<AccessPoint3D, String>>() {
             @Override
@@ -101,10 +91,9 @@ public class PointTable {
                 }
             }
         });
-        //Аналогичная настройка столбца Z...
         zColumn.setPrefWidth(130);
         zColumn.setSortable(false);
-        zColumn.setCellValueFactory(new PropertyValueFactory<AccessPoint3D, String>("z"));
+        zColumn.setCellValueFactory(new PropertyValueFactory<>("z"));
         zColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         zColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<AccessPoint3D, String>>() {
             @Override
@@ -126,15 +115,13 @@ public class PointTable {
                 }
             }
         });
-        //Устанавливаем размеры строчек таблицы
         table.setFixedCellSize(30);
-        //Устанавливаем размеры таблицы
         table.setMaxSize(395, 147);
         table.setMinSize(395, 147);
-        //Объявляем данные таблицы
         table.setItems(data);
-        //Объявляем столбцы таблицы
         table.getColumns().addAll(xColumn, yColumn, zColumn);
+
+        SimpleDoubleProperty cell = new SimpleDoubleProperty(0.0);
     }
 
     public TableView<AccessPoint3D> getTable() {
